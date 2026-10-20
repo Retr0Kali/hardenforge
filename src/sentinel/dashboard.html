@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SentinelHardener</title>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#14213d;--mut:#667085;--bd:#dde2ea;--ac:#2457d6;--pass:#22a559;--fail:#d64545;--warn:#e0a030;--na:#a9b2c1;--err:#e0782a}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1319;--card:#171d26;--tx:#e8ecf2;--mut:#93a0b4;--bd:#2a3340;--ac:#6c9bff;--pass:#3fbf7f;--fail:#ff6b5b;--warn:#e0a84a;--na:#6f7b8d;--err:#f0904a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px system-ui,sans-serif;padding:18px;max-width:1200px;margin-inline:auto}
+h1{font-size:22px;text-align:center;letter-spacing:.5px;margin:0 0 14px}h2{font-size:13px;letter-spacing:.8px;text-transform:uppercase;margin:0 0 10px}
+.mut{color:var(--mut)}.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px}
+.cols{display:grid;grid-template-columns:1.1fr 1.2fr .9fr;gap:16px}@media(max-width:900px){.cols{grid-template-columns:1fr}}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.scroll{overflow-x:auto}
+input,select,button{font:inherit;padding:6px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx)}
+button{cursor:pointer;background:var(--ac);color:#fff;border-color:var(--ac)}button.s{background:var(--card);color:var(--tx)}
+.pc{display:flex;gap:12px;align-items:center;cursor:pointer;border:2px solid transparent}.pc.on{border-color:var(--ac)}
+.pc .n{font-size:18px;font-weight:600}.big{font-size:26px;font-weight:700}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--bd);margin:6px 0}.bar div{height:100%}
+.PASS{background:var(--pass)}.FAIL{background:var(--fail)}.ERROR{background:var(--err)}.MANUAL_REVIEW,.NOT_CHECKED{background:var(--warn)}.NOT_APPLICABLE{background:var(--na)}
+.b{padding:2px 8px;border-radius:10px;font-size:12px;color:#fff;white-space:nowrap}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{cursor:pointer;color:var(--mut);font-weight:500}tr.r:hover{background:var(--bg);cursor:pointer}
+.step{display:flex;gap:10px;align-items:center}.dot{width:12px;height:12px;border-radius:50%;background:var(--pass)}.dot.off{background:var(--na)}
+.arrow{margin:4px 0 4px 4px;color:var(--mut)}.pill{display:inline-block;border:1px solid var(--bd);border-radius:8px;padding:6px 12px;margin:2px}
+pre{background:var(--bg);padding:10px;border-radius:6px;overflow:auto;max-height:280px}#err{color:var(--fail)}
+</style></head><body>
+<h1>SENTINELHARDENER · BENCHMARK COMPLIANCE</h1>
+<div class="card row"><input id="tok" type="password" placeholder="API token (memory only)" size="32" autocomplete="off">
+<button id="run">Scan this host</button><button class="s" id="rf">Refresh</button><button class="s" id="xh">Report HTML</button><button class="s" id="xc">CSV</button><button class="s" id="xj">JSON</button><span id="err"></span></div>
+<div class="cols">
+ <div><h2>Targets</h2><div id="pf"></div></div>
+ <div><h2>Finding breakdown</h2><div class="card" id="bd"></div><h2>Profiles</h2><div id="lv"></div><h2>Trend</h2><div class="card" id="tr"></div></div>
+ <div><h2>Remediation workflow</h2><div class="card" id="wf"></div></div>
+</div>
+<div class="card"><h2>Open risk (FAIL / ERROR)</h2><div id="rk"></div></div>
+<div class="card"><h2>Findings</h2>
+ <div class="row"><input id="q" placeholder="Search rule / title"><select id="fo"><option value="">All outcomes</option></select><select id="fp"><option value="">All profiles</option><option>L1</option><option>L2</option></select><span class="mut" id="cnt"></span></div>
+ <div class="scroll"><table><thead><tr id="th"></tr></thead><tbody id="tb"></tbody></table></div><div id="det"></div></div>
+<div class="card"><h2>AI providers <span class="mut">(optional)</span></h2><div class="scroll"><table><tbody id="pv"></tbody></table></div><div class="mut" id="usage"></div></div>
+<div class="card row mut" id="chips"></div><div class="mut" id="foot"></div>
+<script>
+let token="",scans=[],sel=null,cur=null,sortK="severity",sortD=1;
+const $=i=>document.getElementById(i),SEV={critical:0,high:1,medium:2,low:3},NS="http://www.w3.org/2000/svg";
+const OUT=["PASS","FAIL","ERROR","MANUAL_REVIEW","NOT_CHECKED","NOT_APPLICABLE"];
+function h(t,a={},...k){const e=document.createElement(t);for(const[x,v]of Object.entries(a))x==="class"?e.className=v:x.startsWith("on")?e.addEventListener(x.slice(2),v):e.setAttribute(x,v);
+ for(const c of k)e.append(c instanceof Node?c:String(c??""));return e}  // text nodes only: evidence is untrusted
+async function api(p,o={}){const r=await fetch(p,{...o,headers:{authorization:"Bearer "+token,"content-type":"application/json"}});
+ if(r.status===401)throw new Error("Invalid token");if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+const badge=o=>h("span",{class:"b "+o},o.replace("_"," "));
+const ago=t=>{const s=(Date.now()-new Date(t))/1000;return s<90?"just now":s<5400?Math.round(s/60)+" min ago":s<129600?Math.round(s/3600)+" h ago":Math.round(s/86400)+" d ago"};
+const col=p=>p==null?"var(--na)":p>=90?"var(--pass)":p>=75?"var(--warn)":"var(--fail)";
+function ring(p){const c=213.6,svg=document.createElementNS(NS,"svg");svg.setAttribute("width",84);svg.setAttribute("height",84);svg.setAttribute("viewBox","0 0 84 84");
+ const mk=(st,da)=>{const e=document.createElementNS(NS,"circle");for(const[k,v]of Object.entries({cx:42,cy:42,r:34,fill:"none","stroke-width":8,stroke:st,"stroke-dasharray":da,transform:"rotate(-90 42 42)","stroke-linecap":"round"}))e.setAttribute(k,v);return e};
+ svg.append(mk("var(--bd)",""),mk(col(p),(p==null?0:c*p/100)+" "+c));const t=document.createElementNS(NS,"text");
+ for(const[k,v]of Object.entries({x:42,y:48,"text-anchor":"middle","font-size":17,"font-weight":700,fill:"var(--tx)"}))t.setAttribute(k,v);t.textContent=p==null?"n/a":Math.round(p)+"%";svg.append(t);return svg}
+function bar(c,total){const b=h("div",{class:"bar"});for(const o of OUT)if(c[o]){const d=h("div",{class:o,title:o+": "+c[o]});d.style.width=100*c[o]/total+"%";b.append(d)}return b}
+function cards(){$("pf").replaceChildren(...(scans.length?scans.map(s=>{const m=s.summary,c=m.counts;
+ return h("div",{class:"card pc"+(s.id===sel?" on":""),onclick:()=>select(s.id)},ring(m.score_percent),
+  h("div",{},h("div",{class:"n"},(s.distro||s.os_family)+" "+(s.version||"")),h("div",{class:"mut"},s.host+" · "+s.source),h("div",{class:"mut"},"Last scan: "+ago(s.ts)),
+   bar(c,m.total_rules||1),h("div",{class:"mut"},"PASS "+c.PASS+" | FAIL "+c.FAIL+" | N/A "+c.NOT_APPLICABLE+" | ERR "+c.ERROR)))}):[h("div",{class:"card mut"},"No scans yet. Click “Scan this host”.")]));
+ $("chips").replaceChildren(...[scans.length+" target(s)","L1 / L2 profile tags","Approval-gated remediation: planned","Scheduling: cron/systemd + CLI --save"].map(t=>h("span",{class:"pill"},t)))}
+function detail(){const s=cur.summary,c=s.counts,t=s.total_rules||1;
+ $("bd").replaceChildren(bar(c,t),h("div",{class:"row"},...OUT.filter(o=>c[o]).map(o=>h("span",{},badge(o)," "+c[o]+" ("+Math.round(100*c[o]/t)+"%)"))),
+  h("div",{class:"mut"},"Score "+(s.score_percent??"n/a")+"% = PASS ÷ (PASS+FAIL). Coverage "+(s.coverage_percent??"n/a")+"%. N/A excluded from score."));
+ $("lv").replaceChildren(...["L1","L2"].map(l=>{const p=cur.profiles[l];return h("div",{class:"card"},h("b",{},"Level "+l+" "),h("span",{class:"big",style:"color:"+col(p.score_percent)},p.score_percent==null?"n/a":p.score_percent+"%"),h("div",{class:"mut"},p.total_rules+" tagged rule(s) · coverage "+(p.coverage_percent??"n/a")+"%"))}));
+ const hs=cur.history.filter(x=>x.score_percent!=null);$("tr").replaceChildren(hs.length<2?h("span",{class:"mut"},"Needs 2+ scans of this target."):(()=>{
+  const svg=document.createElementNS(NS,"svg");svg.setAttribute("viewBox","0 0 300 60");svg.setAttribute("width","100%");const pts=hs.map((x,i)=>(i*300/(hs.length-1))+","+(58-x.score_percent*.56)).join(" ");
+  const pl=document.createElementNS(NS,"polyline");pl.setAttribute("points",pts);pl.setAttribute("fill","none");pl.setAttribute("stroke","var(--ac)");pl.setAttribute("stroke-width",2);svg.append(pl);return svg})());
+ const fails=c.FAIL+c.ERROR;$("wf").replaceChildren(
+  step(true,"Scan complete",new Date(cur.ts).toLocaleString()),arr(),step(true,"Findings generated",fails+" open (FAIL/ERROR) · "+c.MANUAL_REVIEW+" manual review"),arr(),
+  step(false,"Approval required","Not implemented yet"),arr(),step(false,"Remediation applied","Not implemented yet — audit is read-only"));
+ risk();$("foot").textContent=s.total_rules+" rules evaluated. "+cur.source+". Internal technical-compliance score, not an official CIS result.";table()}
+function risk(){const open=cur.results.filter(r=>r.outcome==="FAIL"||r.outcome==="ERROR"),by={critical:0,high:0,medium:0,low:0};open.forEach(r=>by[r.severity]++);
+ open.sort((a,b)=>SEV[a.severity]-SEV[b.severity]);$("rk").replaceChildren(h("div",{class:"row"},...Object.entries(by).map(([k,v])=>h("span",{class:"pill"},k+": "+v))),
+ ...(open.length?open.slice(0,8).map(r=>h("div",{},badge(r.outcome)," "+r.severity+" · "+r.rule_id+" — "+r.title)):[h("div",{class:"mut"},"No open findings.")]))}
+async function exp(f){if(!cur)return;const r=await fetch("/scans/"+cur.id+"/report?format="+f,{headers:{authorization:"Bearer "+token}});if(!r.ok)throw new Error("HTTP "+r.status);
+ const a=h("a",{href:URL.createObjectURL(await r.blob()),download:"sentinel-scan-"+cur.id+"."+f});document.body.append(a);a.click();a.remove()}
+const step=(on,t,s)=>h("div",{class:"step"},h("span",{class:"dot"+(on?"":" off")}),h("div",{},h("b",{},t),h("div",{class:"mut"},s)));const arr=()=>h("div",{class:"arrow"},"↓");
+function table(){const q=$("q").value.toLowerCase(),fo=$("fo").value,fp=$("fp").value;
+ const rows=cur.results.filter(r=>(!fo||r.outcome===fo)&&(!fp||r.profile===fp)&&(r.rule_id+" "+r.title).toLowerCase().includes(q));
+ const key=r=>sortK==="severity"?SEV[r.severity]:r[sortK]??"";rows.sort((a,b)=>(key(a)>key(b)?1:key(a)<key(b)?-1:0)*sortD);$("cnt").textContent=rows.length+" shown";
+ $("th").replaceChildren(...[["outcome","Outcome"],["severity","Severity"],["profile","Lvl"],["rule_id","Rule"],["title","Title"]].map(([k,l])=>h("th",{onclick:()=>{sortD=sortK===k?-sortD:1;sortK=k;table()}},l+(sortK===k?(sortD>0?" ▲":" ▼"):""))));
+ $("tb").replaceChildren(...rows.map(r=>h("tr",{class:"r",onclick:()=>$("det").replaceChildren(h("h2",{},r.rule_id+" v"+r.rule_version+" · "+r.provenance.kind+" · "+r.provenance.source),badge(r.outcome),
+  h("div",{class:"mut"},"Message: "+(r.message||"—")+" · SHA-256 "+r.evidence_sha256),h("div",{},"Remediation (manual guidance, never auto-applied): "+(r.remediation||"—")),h("pre",{},JSON.stringify(r.evidence,null,2)),h("button",{class:"s",onclick:()=>$("det").replaceChildren()},"Close"))},
+  h("td",{},badge(r.outcome)),h("td",{},r.severity),h("td",{},r.profile||"—"),h("td",{},r.rule_id),h("td",{},r.title))))}
+async function select(id){sel=id;cur=await api("/scans/"+id);cards();detail()}
+async function load(pick){scans=await api("/scans");const id=pick||(scans.find(s=>s.id===sel)?sel:scans[0]?.id);cards();if(id)await select(id);providers()}
+async function providers(){const d=await api("/providers");$("pv").replaceChildren(...d.providers.map(p=>{const i=h("input",{type:"password",placeholder:"paste API key",autocomplete:"off"});
+ return h("tr",{},h("td",{},p.provider),h("td",{},p.configured?p.key:"not set"),h("td",{},p.model||"set SENTINEL_"+p.provider.toUpperCase()+"_MODEL"),
+ h("td",{},i,h("button",{onclick:async()=>{try{await api("/providers/"+p.provider+"/key",{method:"PUT",body:JSON.stringify({api_key:i.value})});providers()}catch(e){$("err").textContent=e.message}}},"Save")),
+ h("td",{},h("button",{class:"s",onclick:async()=>{await api("/providers/"+p.provider+"/key",{method:"DELETE"});providers()}},"Delete")))}));
+ $("usage").textContent="Usage: "+JSON.stringify(d.usage.providers)+" (costs are estimates)"}
+const guard=f=>async()=>{token=$("tok").value;$("err").textContent="";try{await f()}catch(e){$("err").textContent=e.message}};
+$("run").onclick=guard(async()=>{const d=await api("/audit",{method:"POST"});await load(d.scan_id)});$("rf").onclick=guard(()=>load());
+for(const[i,f]of[["xh","html"],["xc","csv"],["xj","json"]])$(i).onclick=guard(()=>exp(f));
+$("fo").append(...OUT.map(o=>h("option",{value:o},o)));for(const i of["q","fo","fp"])$(i).oninput=()=>cur&&table();
+</script></body></html>

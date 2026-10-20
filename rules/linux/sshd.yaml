@@ -1,0 +1,77 @@
+# EXAMPLE community rules. These are NOT CIS content and carry no CIS control IDs.
+# Official benchmark rules must be imported from authorized sources (see docs/ARCHITECTURE.md).
+- id: SH-LNX-SSH-001
+  title: SSH root login is disabled
+  description: sshd should not permit direct root login.
+  platforms: [linux]
+  severity: high
+  status: approved
+  profile: L1
+  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  check:
+    type: config_kv
+    params: {path: /etc/ssh/sshd_config, key: PermitRootLogin, op: in, value: ["no"], default: prohibit-password, stop_at_regex: '^match\b', missing_file: not_applicable}
+  remediation: Set "PermitRootLogin no" in sshd_config and reload sshd. Confirm another admin login works first.
+  rollback: Restore the backed-up sshd_config and reload sshd.
+  impact: Direct root SSH sessions stop working.
+  requires_privilege: false
+- id: SH-LNX-SSH-002
+  title: SSH MaxAuthTries is 4 or less
+  description: Limits authentication attempts per connection.
+  platforms: [linux]
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  check:
+    type: config_kv
+    params: {path: /etc/ssh/sshd_config, key: MaxAuthTries, op: le, value: 4, default: "6", stop_at_regex: '^match\b', missing_file: not_applicable}
+  remediation: Set "MaxAuthTries 4" in sshd_config and reload sshd.
+  rollback: Restore the backed-up sshd_config.
+- id: SH-LNX-FS-001
+  title: /etc/passwd is not group/world writable
+  description: Account database must only be writable by root.
+  platforms: [linux]
+  severity: high
+  status: approved
+  profile: L1
+  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  check:
+    type: file_permission
+    params: {path: /etc/passwd, max_mode: "0644", owner_uid: 0}
+  remediation: chown root:root /etc/passwd; chmod 644 /etc/passwd
+  rollback: Record the previous mode/owner before change and restore.
+- id: SH-LNX-KRN-001
+  title: ASLR is fully enabled
+  description: kernel.randomize_va_space should be 2.
+  platforms: [linux]
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  check:
+    type: sysctl
+    params: {key: kernel.randomize_va_space, value: "2"}
+  remediation: Add "kernel.randomize_va_space = 2" under /etc/sysctl.d/ and apply.
+  rollback: Remove the drop-in file and reload sysctl.
+- id: SH-LNX-MAN-001
+  title: Review privileged group membership
+  description: Verify members of sudo/wheel are expected.
+  platforms: [linux]
+  severity: medium
+  status: approved
+  profile: L2
+  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  check:
+    type: manual
+    params: {instructions: "Run 'getent group sudo wheel' and confirm each member is authorized."}
+- id: SH-LNX-AI-DRAFT-001
+  title: AI-proposed rule awaiting review
+  description: Demonstrates that AI drafts never execute.
+  platforms: [linux]
+  severity: low
+  status: draft
+  provenance: {kind: ai_draft, source: example, version: "0"}
+  check:
+    type: sysctl
+    params: {key: kernel.dmesg_restrict, value: "1"}

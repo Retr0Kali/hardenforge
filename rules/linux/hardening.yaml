@@ -1,0 +1,536 @@
+- id: SH-LNX-KRN-002
+  title: ICMP redirects are not accepted
+  description: ICMP redirects are not accepted.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: &id001
+    kind: community
+    source: sentinel-examples
+    version: '0.1'
+  check:
+    type: sysctl
+    params:
+      key: net.ipv4.conf.all.accept_redirects
+      value: '0'
+      op: eq
+  remediation: Set net.ipv4.conf.all.accept_redirects = 0 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: May affect routing/NAT hosts.
+  requires_privilege: true
+- id: SH-LNX-KRN-003
+  title: Sending ICMP redirects is disabled
+  description: Sending ICMP redirects is disabled.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: net.ipv4.conf.all.send_redirects
+      value: '0'
+      op: eq
+  remediation: Set net.ipv4.conf.all.send_redirects = 0 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: May affect routing/NAT hosts.
+  requires_privilege: true
+- id: SH-LNX-KRN-004
+  title: Source-routed packets are not accepted
+  description: Source-routed packets are not accepted.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: net.ipv4.conf.all.accept_source_route
+      value: '0'
+      op: eq
+  remediation: Set net.ipv4.conf.all.accept_source_route = 0 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-005
+  title: Reverse-path filtering is enabled
+  description: Reverse-path filtering is enabled.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: net.ipv4.conf.all.rp_filter
+      value: '1'
+      op: ge
+  remediation: Set net.ipv4.conf.all.rp_filter = 1 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-006
+  title: TCP SYN cookies are enabled
+  description: TCP SYN cookies are enabled.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: net.ipv4.tcp_syncookies
+      value: '1'
+      op: eq
+  remediation: Set net.ipv4.tcp_syncookies = 1 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-007
+  title: Broadcast ICMP echo is ignored
+  description: Broadcast ICMP echo is ignored.
+  platforms:
+  - linux
+  severity: low
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: net.ipv4.icmp_echo_ignore_broadcasts
+      value: '1'
+      op: eq
+  remediation: Set net.ipv4.icmp_echo_ignore_broadcasts = 1 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-008
+  title: dmesg is restricted to privileged users
+  description: dmesg is restricted to privileged users.
+  platforms:
+  - linux
+  severity: low
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: kernel.dmesg_restrict
+      value: '1'
+      op: eq
+  remediation: Set kernel.dmesg_restrict = 1 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-009
+  title: Kernel pointers are hidden from unprivileged users
+  description: Kernel pointers are hidden from unprivileged users.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: kernel.kptr_restrict
+      value: '1'
+      op: ge
+  remediation: Set kernel.kptr_restrict = 1 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-010
+  title: Core dumps of SUID programs are disabled
+  description: Core dumps of SUID programs are disabled.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: fs.suid_dumpable
+      value: '0'
+      op: eq
+  remediation: Set fs.suid_dumpable = 0 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-011
+  title: Hardlink protection is enabled
+  description: Hardlink protection is enabled.
+  platforms:
+  - linux
+  severity: low
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: fs.protected_hardlinks
+      value: '1'
+      op: eq
+  remediation: Set fs.protected_hardlinks = 1 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-012
+  title: Symlink protection is enabled
+  description: Symlink protection is enabled.
+  platforms:
+  - linux
+  severity: low
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: fs.protected_symlinks
+      value: '1'
+      op: eq
+  remediation: Set fs.protected_symlinks = 1 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-013
+  title: ptrace is restricted (Yama)
+  description: ptrace is restricted (Yama).
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L2
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: kernel.yama.ptrace_scope
+      value: '1'
+      op: ge
+  remediation: Set kernel.yama.ptrace_scope = 1 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-KRN-014
+  title: IP forwarding is disabled (non-router hosts)
+  description: IP forwarding is disabled (non-router hosts).
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L2
+  provenance: *id001
+  check:
+    type: sysctl
+    params:
+      key: net.ipv4.ip_forward
+      value: '0'
+      op: eq
+  remediation: Set net.ipv4.ip_forward = 0 in a file under /etc/sysctl.d/ and run 'sysctl --system'.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: May affect routing/NAT hosts.
+  requires_privilege: true
+- id: SH-LNX-FS-002
+  title: /etc/shadow permissions are restricted
+  description: /etc/shadow permissions are restricted.
+  platforms:
+  - linux
+  severity: high
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: file_permission
+    params:
+      path: /etc/shadow
+      max_mode: '0640'
+      owner_uid: 0
+      missing_file: fail
+  remediation: chown root:root /etc/shadow; chmod 0640 /etc/shadow
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-FS-003
+  title: /etc/gshadow permissions are restricted
+  description: /etc/gshadow permissions are restricted.
+  platforms:
+  - linux
+  severity: high
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: file_permission
+    params:
+      path: /etc/gshadow
+      max_mode: '0640'
+      owner_uid: 0
+      missing_file: not_applicable
+  remediation: chown root:root /etc/gshadow; chmod 0640 /etc/gshadow
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-FS-004
+  title: /etc/group is not writable by non-root
+  description: /etc/group is not writable by non-root.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: file_permission
+    params:
+      path: /etc/group
+      max_mode: '0644'
+      owner_uid: 0
+      missing_file: fail
+  remediation: chown root:root /etc/group; chmod 0644 /etc/group
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-FS-005
+  title: sshd_config is only writable/readable by root
+  description: sshd_config is only writable/readable by root.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: file_permission
+    params:
+      path: /etc/ssh/sshd_config
+      max_mode: '0600'
+      owner_uid: 0
+      missing_file: not_applicable
+  remediation: chown root:root /etc/ssh/sshd_config; chmod 0600 /etc/ssh/sshd_config
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-FS-006
+  title: sudoers file permissions are restricted
+  description: sudoers file permissions are restricted.
+  platforms:
+  - linux
+  severity: high
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: file_permission
+    params:
+      path: /etc/sudoers
+      max_mode: '0440'
+      owner_uid: 0
+      missing_file: not_applicable
+  remediation: chown root:root /etc/sudoers; chmod 0440 /etc/sudoers
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-FS-007
+  title: /etc/crontab is restricted to root
+  description: /etc/crontab is restricted to root.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: file_permission
+    params:
+      path: /etc/crontab
+      max_mode: '0600'
+      owner_uid: 0
+      missing_file: not_applicable
+  remediation: chown root:root /etc/crontab; chmod 0600 /etc/crontab
+  rollback: Restore the pre-change value/file from your backup.
+  impact: ''
+  requires_privilege: true
+- id: SH-LNX-SSH-010
+  title: SSH rejects empty passwords
+  description: SSH rejects empty passwords.
+  platforms:
+  - linux
+  severity: high
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: config_kv
+    params:
+      path: /etc/ssh/sshd_config
+      key: PermitEmptyPasswords
+      op: in
+      value:
+      - 'no'
+      default: 'no'
+      stop_at_regex: ^match\b
+      missing_file: not_applicable
+  remediation: Set 'PermitEmptyPasswords no' in sshd_config, validate with 'sshd -t', reload sshd. Keep an existing session open while testing.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: Wrong values can lock you out of SSH.
+  requires_privilege: true
+- id: SH-LNX-SSH-011
+  title: SSH X11 forwarding is disabled
+  description: SSH X11 forwarding is disabled.
+  platforms:
+  - linux
+  severity: low
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: config_kv
+    params:
+      path: /etc/ssh/sshd_config
+      key: X11Forwarding
+      op: in
+      value:
+      - 'no'
+      default: 'no'
+      stop_at_regex: ^match\b
+      missing_file: not_applicable
+  remediation: Set 'X11Forwarding no' in sshd_config, validate with 'sshd -t', reload sshd. Keep an existing session open while testing.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: Wrong values can lock you out of SSH.
+  requires_privilege: true
+- id: SH-LNX-SSH-012
+  title: SSH LoginGraceTime is 60s or less
+  description: SSH LoginGraceTime is 60s or less.
+  platforms:
+  - linux
+  severity: low
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: config_kv
+    params:
+      path: /etc/ssh/sshd_config
+      key: LoginGraceTime
+      op: le
+      value: 60
+      default: '120'
+      stop_at_regex: ^match\b
+      missing_file: not_applicable
+  remediation: Set 'LoginGraceTime 60' in sshd_config, validate with 'sshd -t', reload sshd. Keep an existing session open while testing.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: Wrong values can lock you out of SSH.
+  requires_privilege: true
+- id: SH-LNX-SSH-013
+  title: SSH does not allow user environment overrides
+  description: SSH does not allow user environment overrides.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L1
+  provenance: *id001
+  check:
+    type: config_kv
+    params:
+      path: /etc/ssh/sshd_config
+      key: PermitUserEnvironment
+      op: in
+      value:
+      - 'no'
+      default: 'no'
+      stop_at_regex: ^match\b
+      missing_file: not_applicable
+  remediation: Set 'PermitUserEnvironment no' in sshd_config, validate with 'sshd -t', reload sshd. Keep an existing session open while testing.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: Wrong values can lock you out of SSH.
+  requires_privilege: true
+- id: SH-LNX-SSH-014
+  title: SSH password authentication is disabled (keys only)
+  description: SSH password authentication is disabled (keys only).
+  platforms:
+  - linux
+  severity: high
+  status: approved
+  profile: L2
+  provenance: *id001
+  check:
+    type: config_kv
+    params:
+      path: /etc/ssh/sshd_config
+      key: PasswordAuthentication
+      op: in
+      value:
+      - 'no'
+      default: 'yes'
+      stop_at_regex: ^match\b
+      missing_file: not_applicable
+  remediation: Set 'PasswordAuthentication no' in sshd_config, validate with 'sshd -t', reload sshd. Keep an existing session open while testing.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: Wrong values can lock you out of SSH.
+  requires_privilege: true
+- id: SH-LNX-SSH-015
+  title: SSH TCP forwarding is disabled
+  description: SSH TCP forwarding is disabled.
+  platforms:
+  - linux
+  severity: medium
+  status: approved
+  profile: L2
+  provenance: *id001
+  check:
+    type: config_kv
+    params:
+      path: /etc/ssh/sshd_config
+      key: AllowTcpForwarding
+      op: in
+      value:
+      - 'no'
+      default: 'yes'
+      stop_at_regex: ^match\b
+      missing_file: not_applicable
+  remediation: Set 'AllowTcpForwarding no' in sshd_config, validate with 'sshd -t', reload sshd. Keep an existing session open while testing.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: Wrong values can lock you out of SSH.
+  requires_privilege: true
+- id: SH-LNX-SSH-016
+  title: SSH idle probe interval is set (<=300s)
+  description: SSH idle probe interval is set (<=300s).
+  platforms:
+  - linux
+  severity: low
+  status: approved
+  profile: L2
+  provenance: *id001
+  check:
+    type: config_kv
+    params:
+      path: /etc/ssh/sshd_config
+      key: ClientAliveInterval
+      op: le
+      value: 300
+      default: '0'
+      stop_at_regex: ^match\b
+      missing_file: not_applicable
+  remediation: Set 'ClientAliveInterval 300' in sshd_config, validate with 'sshd -t', reload sshd. Keep an existing session open while testing.
+  rollback: Restore the pre-change value/file from your backup.
+  impact: Wrong values can lock you out of SSH.
+  requires_privilege: true

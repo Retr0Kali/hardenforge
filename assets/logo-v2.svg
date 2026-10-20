@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="HardenForge logo">
+  <defs>
+    <linearGradient id="bgd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#262c3a"/><stop offset="1" stop-color="#0c0f16"/></linearGradient>
+    <linearGradient id="fire" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc15a"/><stop offset="1" stop-color="#ff6a1a"/></linearGradient>
+  </defs>
+  <path d="M64 5 L116 35 V93 L64 123 L12 93 V35 Z" fill="url(#bgd)" stroke="#ff8a2a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M64 15 L107 40 V88 L64 113 L21 88 V40 Z" fill="none" stroke="#ffffff" stroke-opacity=".10" stroke-width="2"/>
+  <path d="M24 56 C34 56 38 50 46 50 H100 V62 H79 C79 68 73 70 71 74 V78 H81 V88 H45 V78 H55 V74 C53 70 47 64 41 62 C33 62 28 60 24 56 Z" fill="url(#fire)"/>
+  <path d="M46 50 H100 V53 H46 Z" fill="#fff" fill-opacity=".35"/>
+  <path d="M72 14 L75.5 26 L87 29.5 L75.5 33 L72 45 L68.5 33 L57 29.5 L68.5 26 Z" fill="#ffd27a"/>
+  <g fill="#ff9d2e"><circle cx="93" cy="26" r="3"/><circle cx="50" cy="36" r="2.4"/><circle cx="98" cy="42" r="1.8"/></g>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a1630"/><stop offset="1" stop-color="#0f2a5f"/></linearGradient></defs>
+<rect width="1280" height="640" fill="url(#bg)"/>
+<g opacity=".08" stroke="#fff"><path d="M0 520 H1280 M0 560 H1280 M0 600 H1280"/></g>
+<g transform="translate(100,175) scale(2.4)">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f6bff"/><stop offset="1" stop-color="#0b2a6b"/></linearGradient>
+    <linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  </defs>
+  <path d="M64 7 L111 23 V62 C111 93 91 112 64 122 C37 112 17 93 17 62 V23 Z" fill="url(#g)"/>
+  <path d="M64 7 L111 23 V62 C111 70 109 77 106 83 C90 60 40 60 22 83 C19 77 17 70 17 62 V23 Z" fill="url(#h)"/>
+  <path d="M64 17 L101 29.5 V62 C101 87 85 103 64 112 C43 103 27 87 27 62 V29.5 Z" fill="none" stroke="#9fc0ff" stroke-opacity=".55" stroke-width="2"/>
+  <polyline points="42,64 58,80 88,46" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#ff9d2e"><circle cx="96" cy="40" r="4"/><path d="M96 28 l2.2 7.8 L106 38 l-7.8 2.2 L96 48 l-2.2-7.8 L86 38 l7.8-2.2z" opacity=".95"/></g>
+</g>
+<text x="430" y="305" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="96" font-weight="800" fill="#fff">HardenForge</text>
+<text x="434" y="368" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="36" fill="#b8c7e6">Evidence-based OS hardening audits</text>
+<text x="434" y="424" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="26" fill="#7fb2ff">Read-only by default · Rule engine · Optional AI</text>
+</svg>
