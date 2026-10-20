@@ -7,7 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-# Documented public API base URLs; overridable via SENTINEL_<PROVIDER>_ENDPOINT.
+# Documented public API base URLs; overridable via HARDENFORGE_<PROVIDER>_ENDPOINT.
 DEFAULT_ENDPOINTS = {
     "gemini": "https://generativelanguage.googleapis.com",
     "openai": "https://api.openai.com",

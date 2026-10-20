@@ -20,4 +20,4 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 
 [tool.setuptools.package-data]
-sentinel = ["dashboard.html"]
+hardenforge = ["dashboard.html"]

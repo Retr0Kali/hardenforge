@@ -5,22 +5,22 @@ import pytest
 from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 
-from sentinel.ai.manager import AIError, AIManager, AIRequest, ConsentRequired, configs_from_env
-from sentinel.api import create_app
-from sentinel.secrets import SecretStore, SecretStoreError, mask
+from hardenforge.ai.manager import AIError, AIManager, AIRequest, ConsentRequired, configs_from_env
+from hardenforge.api import create_app
+from hardenforge.secrets import SecretStore, SecretStoreError, mask
 
 MK = Fernet.generate_key().decode()
 
 
 def env(tmp_path, **extra):
-    base = {"SENTINEL_MASTER_KEY": MK, "SENTINEL_DATA_DIR": str(tmp_path), "SENTINEL_API_TOKEN": "t" * 24,
-            "SENTINEL_OPENAI_MODEL": "m-openai", "SENTINEL_ANTHROPIC_MODEL": "m-model-b", "SENTINEL_GEMINI_MODEL": "m-gem"}
+    base = {"HARDENFORGE_MASTER_KEY": MK, "HARDENFORGE_DATA_DIR": str(tmp_path), "HARDENFORGE_API_TOKEN": "t" * 24,
+            "HARDENFORGE_OPENAI_MODEL": "m-openai", "HARDENFORGE_ANTHROPIC_MODEL": "m-model-b", "HARDENFORGE_GEMINI_MODEL": "m-gem"}
     base.update(extra)
     return base
 
 
 def test_store_roundtrip_encrypted_and_mask(tmp_path):
-    s = SecretStore(tmp_path / "s.json", environ={"SENTINEL_MASTER_KEY": MK})
+    s = SecretStore(tmp_path / "s.json", environ={"HARDENFORGE_MASTER_KEY": MK})
     s.set("openai", "sk-test-1234567890abcd")
     raw = (tmp_path / "s.json").read_text()
     assert "sk-test" not in raw and oct((tmp_path / "s.json").stat().st_mode & 0o777) == "0o600"
@@ -34,8 +34,8 @@ def test_store_roundtrip_encrypted_and_mask(tmp_path):
 
 
 def mgr(tmp_path, handler, **kw):
-    e = env(tmp_path, SENTINEL_OPENAI_API_KEY="sk-openai-SECRET123456", SENTINEL_ANTHROPIC_API_KEY="sk-ant-SECRET123456789",
-            SENTINEL_OPENAI_PRICE_IN="1", SENTINEL_OPENAI_PRICE_OUT="2")
+    e = env(tmp_path, HARDENFORGE_OPENAI_API_KEY="sk-openai-SECRET123456", HARDENFORGE_ANTHROPIC_API_KEY="sk-ant-SECRET123456789",
+            HARDENFORGE_OPENAI_PRICE_IN="1", HARDENFORGE_OPENAI_PRICE_OUT="2")
     store = SecretStore(tmp_path / "s.json", environ=e)
     return AIManager(store=store, configs=configs_from_env(e), sharing={"findings"},
                      client=httpx.Client(transport=httpx.MockTransport(handler)), sleep=lambda s: None, **kw)
@@ -106,11 +106,11 @@ def test_api_auth_and_key_masking(tmp_path):
 
 def test_api_refuses_to_start_without_token(tmp_path):
     with pytest.raises(RuntimeError):
-        create_app({"SENTINEL_DATA_DIR": str(tmp_path)})
+        create_app({"HARDENFORGE_DATA_DIR": str(tmp_path)})
 
 
 def test_audit_endpoint_readonly(tmp_path):
-    e = env(tmp_path, SENTINEL_RULES_DIR=str(__import__("pathlib").Path(__file__).parent.parent / "rules"))
+    e = env(tmp_path, HARDENFORGE_RULES_DIR=str(__import__("pathlib").Path(__file__).parent.parent / "rules"))
     c = TestClient(create_app(e))
     d = c.post("/audit", headers={"authorization": "Bearer " + "t" * 24}).json()
     assert d["mode"] == "read-only" and d["summary"]["total_rules"] >= 5
@@ -118,13 +118,13 @@ def test_audit_endpoint_readonly(tmp_path):
 
 def test_dashboard_served_with_csp(tmp_path):
     r = TestClient(create_app(env(tmp_path))).get("/")
-    assert r.status_code == 200 and "SentinelHardener" in r.text
+    assert r.status_code == 200 and "HardenForge" in r.text
     assert "frame-ancestors 'none'" in r.headers["content-security-policy"]
     assert "innerHTML" not in r.text  # untrusted evidence must only be rendered as text
 
 
 def _client(tmp_path):
-    e = env(tmp_path, SENTINEL_RULES_DIR=str(__import__("pathlib").Path(__file__).parent.parent / "rules"))
+    e = env(tmp_path, HARDENFORGE_RULES_DIR=str(__import__("pathlib").Path(__file__).parent.parent / "rules"))
     return TestClient(create_app(e)), {"authorization": "Bearer " + "t" * 24}
 
 
@@ -154,7 +154,7 @@ def test_ingest_recomputes_summary_and_validates(tmp_path):
 
 
 def test_reports_escape_and_neutralise(tmp_path):
-    from sentinel import report
+    from hardenforge import report
     evil = {"id": 1, "ts": "t", "host": "<script>x</script>", "os_family": "linux", "distro": None, "version": None, "source": "local",
             "summary": {"score_percent": 50, "coverage_percent": 100, "counts": {"PASS": 1}},
             "results": [{"rule_id": "A-1", "rule_version": 1, "title": "=HYPERLINK(\"http://x\")", "severity": "high", "outcome": "FAIL",

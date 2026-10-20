@@ -70,11 +70,11 @@ def configs_from_env(environ: Mapping[str, str]) -> dict[str, ProviderConfig]:
     cfgs: dict[str, ProviderConfig] = {}
     for p in PROVIDERS:
         up = p.upper()
-        model = environ.get(f"SENTINEL_{up}_MODEL", "")
-        pin, pout = environ.get(f"SENTINEL_{up}_PRICE_IN"), environ.get(f"SENTINEL_{up}_PRICE_OUT")
+        model = environ.get(f"HARDENFORGE_{up}_MODEL", "")
+        pin, pout = environ.get(f"HARDENFORGE_{up}_PRICE_IN"), environ.get(f"HARDENFORGE_{up}_PRICE_OUT")
         cfgs[p] = ProviderConfig(
             name=p,
-            endpoint=environ.get(f"SENTINEL_{up}_ENDPOINT") or DEFAULT_ENDPOINTS[p],
+            endpoint=environ.get(f"HARDENFORGE_{up}_ENDPOINT") or DEFAULT_ENDPOINTS[p],
             model=model,
             price_in_per_mtok=float(pin) if pin else None,
             price_out_per_mtok=float(pout) if pout else None,
@@ -101,7 +101,7 @@ class AIManager:
     @classmethod
     def from_env(cls, store: SecretStore, environ: Mapping[str, str] | None = None) -> "AIManager":
         env = environ if environ is not None else os.environ
-        sharing = {s.strip() for s in env.get("SENTINEL_AI_SHARING", "").split(",") if s.strip()}
+        sharing = {s.strip() for s in env.get("HARDENFORGE_AI_SHARING", "").split(",") if s.strip()}
         return cls(store=store, configs=configs_from_env(env), sharing=sharing)
 
     # -- internals ----------------------------------------------------------
@@ -114,7 +114,7 @@ class AIManager:
     def _call(self, name: str, req: AIRequest, prompt: str) -> AIResponse:
         cfg, adapter = self.configs[name], ADAPTERS[name]
         if not cfg.model:
-            raise AIError(f"{name}: no model configured (set SENTINEL_{name.upper()}_MODEL)")
+            raise AIError(f"{name}: no model configured (set HARDENFORGE_{name.upper()}_MODEL)")
         key = self.store.get(name)
         if not key:
             raise AIError(f"{name}: no API key configured")

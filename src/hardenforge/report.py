@@ -39,7 +39,7 @@ def to_html(scan: dict, profiles: dict) -> str:
         for r in res)
     prof = " | ".join(f'{l}: score {p["score_percent"]}% coverage {p["coverage_percent"]}%' for l, p in profiles.items())
     counts = " | ".join(f"{k} {v}" for k, v in s["counts"].items())
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>SentinelHardener report #{scan["id"]}</title>
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>HardenForge report #{scan["id"]}</title>
 <style>body{{font:14px system-ui,sans-serif;max-width:1100px;margin:24px auto;padding:0 12px;color:#14213d}}table{{border-collapse:collapse;width:100%}}
 td,th{{border-bottom:1px solid #dde2ea;padding:6px;text-align:left;vertical-align:top}}.o{{font-weight:600}}.PASS{{color:#1a7f4b}}.FAIL,.ERROR{{color:#c0392b}}
 .big{{font-size:28px;font-weight:700}}pre{{background:#f4f6fa;padding:8px;overflow:auto}}</style></head><body>

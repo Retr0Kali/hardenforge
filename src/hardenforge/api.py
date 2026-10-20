@@ -46,21 +46,21 @@ def _profiles(results: list[Result]) -> dict:
 
 def create_app(environ: Mapping[str, str] | None = None) -> FastAPI:
     env = environ if environ is not None else os.environ
-    token = env.get("SENTINEL_API_TOKEN", "")
+    token = env.get("HARDENFORGE_API_TOKEN", "")
     if len(token) < 16:
-        raise RuntimeError("SENTINEL_API_TOKEN must be set (>=16 chars). Refusing to start unauthenticated.")
-    data_dir = Path(env.get("SENTINEL_DATA_DIR", "./data"))
-    rules_dir = Path(env.get("SENTINEL_RULES_DIR", "./rules"))  # server-side only; never client-supplied
+        raise RuntimeError("HARDENFORGE_API_TOKEN must be set (>=16 chars). Refusing to start unauthenticated.")
+    data_dir = Path(env.get("HARDENFORGE_DATA_DIR", "./data"))
+    rules_dir = Path(env.get("HARDENFORGE_RULES_DIR", "./rules"))  # server-side only; never client-supplied
     store = SecretStore(data_dir / "secrets.enc.json", environ=env)
     ai = AIManager.from_env(store, env)
-    db = Store(data_dir / "sentinel.db")
+    db = Store(data_dir / "hardenforge.db")
     bearer = HTTPBearer(auto_error=False)
 
     def auth(cred: HTTPAuthorizationCredentials | None = Depends(bearer)) -> None:
         if cred is None or not pysecrets.compare_digest(cred.credentials.encode(), token.encode()):
             raise HTTPException(status_code=401, detail="unauthorized")
 
-    app = FastAPI(title="SentinelHardener", version="0.1.0")
+    app = FastAPI(title="HardenForge", version="0.1.0")
 
     csp = ("default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
            "connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
@@ -95,7 +95,7 @@ def create_app(environ: Mapping[str, str] | None = None) -> FastAPI:
 
     @app.post("/ingest", dependencies=[Depends(auth)])
     def ingest(body: IngestBody):
-        """Results produced by `sentinel audit --format json` on another OS. Stored as unverified; summary is recomputed here."""
+        """Results produced by `hardenforge audit --format json` on another OS. Stored as unverified; summary is recomputed here."""
         summary = summarize(body.results)
         sid = db.save(body.system.model_dump(exclude={"hostname"}) | {"hostname": body.system.hostname}, summary,
                       [r.model_dump(mode="json") for r in body.results], "ingested (unverified)")

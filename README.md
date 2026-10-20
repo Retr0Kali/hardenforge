@@ -34,9 +34,9 @@ pytest
 ### Command line
 
 ```bash
-python -m sentinel audit --rules rules                 # readable output
-python -m sentinel audit --rules rules --format json   # JSON
-python -m sentinel audit --rules rules --save          # also store the scan in data/sentinel.db
+python -m hardenforge audit --rules rules                 # readable output
+python -m hardenforge audit --rules rules --format json   # JSON
+python -m hardenforge audit --rules rules --save          # also store the scan in data/hardenforge.db
 ```
 
 Run it with `sudo` if you want it to read files that only root can read. Without that, those checks end as `ERROR`
@@ -45,9 +45,9 @@ Run it with `sudo` if you want it to read files that only root can read. Without
 ### Dashboard
 
 ```bash
-export SENTINEL_API_TOKEN="$(python -c 'import secrets;print(secrets.token_urlsafe(32))')"
-echo "$SENTINEL_API_TOKEN"
-uvicorn --factory sentinel.api:create_app --host 127.0.0.1 --port 8000
+export HARDENFORGE_API_TOKEN="$(python -c 'import secrets;print(secrets.token_urlsafe(32))')"
+echo "$HARDENFORGE_API_TOKEN"
+uvicorn --factory hardenforge.api:create_app --host 127.0.0.1 --port 8000
 ```
 
 Open http://127.0.0.1:8000/, paste the token and press **Scan this host**. If the port is taken, pick another one.
@@ -60,7 +60,7 @@ guidance for that rule. The report buttons export the selected scan.
 ### Scheduled scans
 
 ```cron
-0 2 * * * cd /opt/hardenforge && . .venv/bin/activate && SENTINEL_DATA_DIR=/var/lib/hardenforge python -m sentinel audit --rules rules --save
+0 2 * * * cd /opt/hardenforge && . .venv/bin/activate && HARDENFORGE_DATA_DIR=/var/lib/hardenforge python -m hardenforge audit --rules rules --save
 ```
 
 ### Other machines
@@ -68,9 +68,9 @@ guidance for that rule. The report buttons export the selected scan.
 Run the audit on the other machine, then send the JSON to your server:
 
 ```bash
-python -m sentinel audit --rules rules --format json > scan.json
+python -m hardenforge audit --rules rules --format json > scan.json
 curl -X POST https://your-server/ingest \
-  -H "Authorization: Bearer $SENTINEL_API_TOKEN" \
+  -H "Authorization: Bearer $HARDENFORGE_API_TOKEN" \
   -H "Content-Type: application/json" -d @scan.json
 ```
 
@@ -132,12 +132,12 @@ Environment variables (see `.env.example`):
 
 | Variable | Purpose |
 |---|---|
-| `SENTINEL_API_TOKEN` | Required for the API and dashboard, at least 16 characters |
-| `SENTINEL_DATA_DIR` | Location of `sentinel.db` and the encrypted key store (default `./data`) |
-| `SENTINEL_RULES_DIR` | Rules directory (default `./rules`) |
-| `SENTINEL_MASTER_KEY` | Fernet key used to encrypt stored provider keys; keep it outside the data directory |
-| `SENTINEL_AI_SHARING` | Data categories allowed to be sent to an AI provider (default: none) |
-| `SENTINEL_<PROVIDER>_API_KEY`, `_MODEL` | Optional; provider is `GEMINI`, `OPENAI` or `ANTHROPIC` |
+| `HARDENFORGE_API_TOKEN` | Required for the API and dashboard, at least 16 characters |
+| `HARDENFORGE_DATA_DIR` | Location of `hardenforge.db` and the encrypted key store (default `./data`) |
+| `HARDENFORGE_RULES_DIR` | Rules directory (default `./rules`) |
+| `HARDENFORGE_MASTER_KEY` | Fernet key used to encrypt stored provider keys; keep it outside the data directory |
+| `HARDENFORGE_AI_SHARING` | Data categories allowed to be sent to an AI provider (default: none) |
+| `HARDENFORGE_<PROVIDER>_API_KEY`, `_MODEL` | Optional; provider is `GEMINI`, `OPENAI` or `ANTHROPIC` |
 
 ## HTTP API
 
@@ -159,7 +159,7 @@ DELETE /providers/{name}/key     remove a key
 
 ## AI providers
 
-`src/sentinel/ai/` contains adapters for Gemini, OpenAI and Anthropic behind one manager. It checks that you have
+`src/hardenforge/ai/` contains adapters for Gemini, OpenAI and Anthropic behind one manager. It checks that you have
 allowed the kind of data being sent, redacts keys, IPs, emails and usernames from the prompt, retries, falls back to
 another provider, applies request and cost limits, and tracks usage (cost is only an estimate from the prices you
 configure). Answers are plain text for a human to read. They never change a result and are never executed. The
@@ -179,12 +179,11 @@ dashboard only manages the keys for now; it doesn't call the manager yet.
 ```
 assets/            logo and social preview images
 rules/linux/       example rules
-src/sentinel/      application code (api, engine, checks, scoring, storage, report, ai/)
+src/hardenforge/      application code (api, engine, checks, scoring, storage, report, ai/)
 tests/             pytest suite
 docs/              architecture and threat model notes
 ```
 
-The Python package is still called `sentinel`; the project name is HardenForge.
 
 ## Limitations
 

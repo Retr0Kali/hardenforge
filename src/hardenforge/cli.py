@@ -1,4 +1,4 @@
-"""CLI: python -m sentinel.cli audit --rules rules [--format json|text]"""
+"""CLI: python -m hardenforge.cli audit --rules rules [--format json|text]"""
 from __future__ import annotations
 
 import argparse
@@ -13,11 +13,11 @@ from .scoring import summarize
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="sentinel")
+    ap = argparse.ArgumentParser(prog="hardenforge")
     sub = ap.add_subparsers(dest="cmd", required=True)
     a = sub.add_parser("audit", help="read-only audit")
     a.add_argument("--rules", type=Path, default=Path("rules"))
-    a.add_argument("--save", action="store_true", help="store scan in SENTINEL_DATA_DIR/sentinel.db (for scheduled runs)")
+    a.add_argument("--save", action="store_true", help="store scan in HARDENFORGE_DATA_DIR/hardenforge.db (for scheduled runs)")
     a.add_argument("--format", choices=["json", "text"], default="text")
     args = ap.parse_args(argv)
 
@@ -28,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.save:
         import os
         from .storage import Store
-        sid = Store(Path(os.environ.get("SENTINEL_DATA_DIR", "./data")) / "sentinel.db").save(info, summary, [r.model_dump(mode="json") for r in results], "local")
+        sid = Store(Path(os.environ.get("HARDENFORGE_DATA_DIR", "./data")) / "hardenforge.db").save(info, summary, [r.model_dump(mode="json") for r in results], "local")
         print(f"saved scan #{sid}", file=sys.stderr)
     if args.format == "json":
         print(json.dumps({"system": info, "summary": summary, "results": [r.model_dump(mode="json") for r in results],

@@ -2,7 +2,7 @@
 
 Priority: environment variable > encrypted store.
 The store is a Fernet-encrypted JSON file (0600). The master key comes from
-SENTINEL_MASTER_KEY (env / OS secret manager) and is never written next to the data.
+HARDENFORGE_MASTER_KEY (env / OS secret manager) and is never written next to the data.
 Keys are never returned in full: use mask().
 """
 from __future__ import annotations
@@ -40,13 +40,13 @@ class SecretStore:
         return provider
 
     def _fernet(self) -> Fernet:
-        mk = self.environ.get("SENTINEL_MASTER_KEY")
+        mk = self.environ.get("HARDENFORGE_MASTER_KEY")
         if not mk:
-            raise SecretStoreError("SENTINEL_MASTER_KEY is not set; cannot use encrypted key store")
+            raise SecretStoreError("HARDENFORGE_MASTER_KEY is not set; cannot use encrypted key store")
         try:
             return Fernet(mk.encode())
         except ValueError as e:
-            raise SecretStoreError("SENTINEL_MASTER_KEY is not a valid Fernet key") from e
+            raise SecretStoreError("HARDENFORGE_MASTER_KEY is not a valid Fernet key") from e
 
     def _load(self) -> dict[str, str]:
         if not self.path.exists():
@@ -63,7 +63,7 @@ class SecretStore:
 
     def get(self, provider: str) -> str | None:
         self._check(provider)
-        env = self.environ.get(f"SENTINEL_{provider.upper()}_API_KEY")
+        env = self.environ.get(f"HARDENFORGE_{provider.upper()}_API_KEY")
         if env:
             return env
         token = self._load().get(provider)

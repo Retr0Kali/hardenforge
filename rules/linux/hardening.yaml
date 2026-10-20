@@ -8,7 +8,7 @@
   profile: L1
   provenance: &id001
     kind: community
-    source: sentinel-examples
+    source: hardenforge-examples
     version: '0.1'
   check:
     type: sysctl

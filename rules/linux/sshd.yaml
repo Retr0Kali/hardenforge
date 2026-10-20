@@ -7,7 +7,7 @@
   severity: high
   status: approved
   profile: L1
-  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  provenance: {kind: community, source: hardenforge-examples, version: "0.1"}
   check:
     type: config_kv
     params: {path: /etc/ssh/sshd_config, key: PermitRootLogin, op: in, value: ["no"], default: prohibit-password, stop_at_regex: '^match\b', missing_file: not_applicable}
@@ -22,7 +22,7 @@
   severity: medium
   status: approved
   profile: L1
-  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  provenance: {kind: community, source: hardenforge-examples, version: "0.1"}
   check:
     type: config_kv
     params: {path: /etc/ssh/sshd_config, key: MaxAuthTries, op: le, value: 4, default: "6", stop_at_regex: '^match\b', missing_file: not_applicable}
@@ -35,7 +35,7 @@
   severity: high
   status: approved
   profile: L1
-  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  provenance: {kind: community, source: hardenforge-examples, version: "0.1"}
   check:
     type: file_permission
     params: {path: /etc/passwd, max_mode: "0644", owner_uid: 0}
@@ -48,7 +48,7 @@
   severity: medium
   status: approved
   profile: L1
-  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  provenance: {kind: community, source: hardenforge-examples, version: "0.1"}
   check:
     type: sysctl
     params: {key: kernel.randomize_va_space, value: "2"}
@@ -61,7 +61,7 @@
   severity: medium
   status: approved
   profile: L2
-  provenance: {kind: community, source: sentinel-examples, version: "0.1"}
+  provenance: {kind: community, source: hardenforge-examples, version: "0.1"}
   check:
     type: manual
     params: {instructions: "Run 'getent group sudo wheel' and confirm each member is authorized."}

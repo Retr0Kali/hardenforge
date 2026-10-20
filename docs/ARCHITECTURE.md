@@ -1,4 +1,4 @@
-# SentinelHardener AI — Architecture & Threat Model (v0.1 read-only MVP)
+# HardenForge — Architecture & Threat Model (v0.1 read-only MVP)
 
 ## Layers
 ```

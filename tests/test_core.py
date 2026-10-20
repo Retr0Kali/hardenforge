@@ -3,11 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from sentinel.checks import Ctx, CheckError
-from sentinel.engine import load_rules, run_audit
-from sentinel.models import Outcome, Rule
-from sentinel.redact import redact
-from sentinel.scoring import summarize
+from hardenforge.checks import Ctx, CheckError
+from hardenforge.engine import load_rules, run_audit
+from hardenforge.models import Outcome, Rule
+from hardenforge.redact import redact
+from hardenforge.scoring import summarize
 
 
 def mk(rid="SH-TEST-001", check=None, **kw):
@@ -117,7 +117,7 @@ def test_applicability_and_approval(root):
 def test_scoring():
     rs = []
     root = Path("/nonexistent")
-    from sentinel.models import Result
+    from hardenforge.models import Result
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc)
     def r(o): return Result(rule_id="X-1", rule_version=1, title="t", severity="low", outcome=o,
